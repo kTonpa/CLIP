@@ -41,8 +41,6 @@ train_group.add_argument('--learning_rate', default = 3e-4, type = float, help =
 
 train_group.add_argument('--clip_grad_norm', default = 0.5, type = float, help = 'Clip gradient norm')
 
-train_group.add_argument('--lr_decay', dest = 'lr_decay', action = 'store_true')
-
 args = parser.parse_args()
 
 # helpers
@@ -55,9 +53,6 @@ def default(val, d):
 
 def get_trainable_params(model):
     return [params for params in model.parameters() if params.requires_grad]
-
-def interpolate(image, size):
-    return F.interpolate(image, (size, size), mode='bilinear', align_corners=False)
 
 def create_clip_img_transform(image_width):
     clip_mean = [0.48145466, 0.4578275, 0.40821073]
@@ -83,7 +78,6 @@ BATCH_SIZE = args.batch_size
 
 LEARNING_RATE = args.learning_rate
 GRAD_CLIP_NORM = args.clip_grad_norm
-LR_DECAY = args.lr_decay
 SAVE_EVERY_N_STEPS = args.save_every_n_steps
 
 # load the dataset and transform
