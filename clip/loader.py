@@ -80,7 +80,7 @@ class TextImageDataset(Dataset):
         tokenized_text = self.text_tokenizer(
             description,
             self.text_len,
-            truncate_text=self.truncate_captions
+            truncate=self.truncate_captions
         ).squeeze(0)
 
         try:
