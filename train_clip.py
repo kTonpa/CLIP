@@ -31,7 +31,7 @@ parser.add_argument('--image_text_path', type=str, required=True,
 parser.add_argument('--clip_output_file_name', type=str, default = "clip",
                     help='output_file_name')
 
-parser.add_argument('--wandb_name', default='clip_train_transformer',
+parser.add_argument('--wandb_name', default='clip_finetuning',
                     help='Name W&B will use when saving results.\ne.g. `--wandb_name "coco2017-full-sparse"`')
 
 
@@ -73,7 +73,7 @@ def create_clip_img_transform(image_width):
                     #T.ToPILImage(),
                     T.Resize(image_width),
                     T.CenterCrop((image_width, image_width)),
-                    T.RandomResizedCrop(size=(224, 224), scale=(0.1, 1.0), ratio=(1.0, 1.0), interpolation=T.functional.InterpolationMode.NEAREST),
+                    T.RandomResizedCrop(size=(image_width, image_width), scale=(0.7, 1.0), ratio=(1.0, 1.0), interpolation=T.functional.InterpolationMode.BICUBIC), # BICUBIC
                     T.ToTensor(),
                     T.Normalize(mean=clip_mean, std=clip_std)
             ])
@@ -112,14 +112,14 @@ assert len(ds) > 0, 'dataset is empty'
 print(f'{len(ds)} image-text pairs found for training')
 
 # Regular DataLoader for image-text-folder datasets
-dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=False)
 
 # load the model in training mode
 
 # Load CLIP
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-clip, norm = load(args.model_name, device=device)
-clip = clip.train()
+clip, _ = load(args.model_name, device=device)
+clip.train()
 
 input_res = clip.visual.input_resolution # 224
 clip_transform = create_clip_img_transform(input_res)
