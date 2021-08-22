@@ -83,6 +83,8 @@ def create_clip_img_transform(image_width):
 # constants
 
 CLIP_OUTPUT_FILE_NAME = args.clip_output_file_name + ".pt"
+CLIP_FINAL_OUTPUT_FILE_NAME = args.clip_output_file_name + "-final.pt"
+
 
 EPOCHS = args.epochs
 BATCH_SIZE = args.batch_size
@@ -117,14 +119,14 @@ dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 # Load CLIP
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 clip, norm = load(args.model_name, device=device)
-clip.train()
+clip = clip.train()
 
 input_res = clip.visual.input_resolution # 224
 clip_transform = create_clip_img_transform(input_res)
 
 # optimizer
 
-opt = Adam(get_trainable_params(clip), lr=LEARNING_RATE, betas=(0.9, 0.98), eps=1e-06, weight_decay=0.2)
+opt = Adam(get_trainable_params(clip), lr=LEARNING_RATE, betas=(0.9, 0.98), eps=1e-06, weight_decay=0.)
 
 model_config = dict(
     batch_size = BATCH_SIZE,
@@ -139,17 +141,13 @@ run = wandb.init(
 )
 
 def save_model(path):
-    save_obj = {
-        'weights': clip.state_dict(),
-        'opt_state': opt.state_dict()
-    }
-
+    save_obj = clip.state_dict()
     torch.save(save_obj, path)
 
 
 # training loop
 
-save_model(f'./{CLIP_OUTPUT_FILE_NAME}.pt')
+save_model(f'./{CLIP_OUTPUT_FILE_NAME}')
 
 # training
 steps = 0
@@ -169,7 +167,7 @@ for epoch in range(0, EPOCHS):
 
         if (i+1) % ACCUM_STEPS == 0:
             # clip_grad_norm_(clip.parameters(), GRAD_CLIP_NORM)
-            # opt.step()
+            opt.step()
             opt.zero_grad()
 
         lr = LEARNING_RATE
@@ -178,7 +176,7 @@ for epoch in range(0, EPOCHS):
 
         if i % 10 == 0:
             # print(f'text logit - {logits_per_text}', f'image logit - {logits_per_image}')
-            print(f'epoch - {epoch},', f'step - {i},', f'loss - {loss.item()}', f'text_loss - {F.cross_entropy(logits_per_text, labels)}', f'image_loss - {F.cross_entropy(logits_per_image, labels)}')
+            print(f'epoch - {epoch},', f'step - {i},', f'loss - {loss.item()}', f'text_loss - {F.cross_entropy(logits_per_text, labels).item()}', f'image_loss - {F.cross_entropy(logits_per_image, labels).item()}')
 
             log = {
                 **log,
@@ -195,7 +193,7 @@ for epoch in range(0, EPOCHS):
             print(epoch, i, f'sample_per_sec - {sample_per_sec}')
 
         if i % SAVE_EVERY_N_STEPS == 0:
-            save_model(f'./{CLIP_OUTPUT_FILE_NAME}.pt')
+            save_model(f'./{CLIP_OUTPUT_FILE_NAME}')
 
         steps += 1
         wandb.log(log)
@@ -206,7 +204,7 @@ for epoch in range(0, EPOCHS):
     run.log_artifact(model_artifact)
 
 
-save_model(f'./{CLIP_OUTPUT_FILE_NAME}-final.pt')
+save_model(f'./{CLIP_FINAL_OUTPUT_FILE_NAME}')
 model_artifact = wandb.Artifact('finetuned-clip', type='model', metadata=dict(model_config))
 run.log_artifact(model_artifact)
 
