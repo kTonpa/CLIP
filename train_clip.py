@@ -112,7 +112,7 @@ assert len(ds) > 0, 'dataset is empty'
 print(f'{len(ds)} image-text pairs found for training')
 
 # Regular DataLoader for image-text-folder datasets
-dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=False)
+dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 
 # load the model in training mode
 
