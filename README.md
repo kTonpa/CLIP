@@ -1,4 +1,25 @@
-# CLIP
+# Training CLIP
+
+Train with colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1njMRnJqRluvLXbpx6LFCtpmcf3ory1sv#scrollTo=w1uctpaL7lqx)
+
+Or from Terminal:
+
+```python
+$ python train_clip.py \
+        --model_name "ViT-B/32" \
+        --clip_output_file_name "clip" \
+        --image_text_path "/content/Dataset" \
+        --wandb_name "clip_finetuning" \
+        --save_every_n_steps 1000 \
+        --epochs 40 \
+        --text_seq_len 77 \
+        --batch_size 256 \
+        --learning_rate 1e-6 \
+        --clip_grad_norm 0.5 \
+        --ga_steps 1
+```
+
+# CLIP — Official implementation
 
 [[Blog]](https://openai.com/blog/clip/) [[Paper]](https://arxiv.org/abs/2103.00020) [[Model Card]](model-card.md) [[Colab]](https://colab.research.google.com/github/openai/clip/blob/master/notebooks/Interacting_with_CLIP.ipynb)
 

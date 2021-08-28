@@ -15,8 +15,6 @@ from clip.clip import load, tokenize
 from clip.loader import TextImageDataset
 
 
-# model, trainig loop arguments
-
 # argument parsing
 
 parser = argparse.ArgumentParser()
@@ -85,7 +83,6 @@ def create_clip_img_transform(image_width):
 CLIP_OUTPUT_FILE_NAME = args.clip_output_file_name + ".pt"
 CLIP_FINAL_OUTPUT_FILE_NAME = args.clip_output_file_name + "-final.pt"
 
-
 EPOCHS = args.epochs
 BATCH_SIZE = args.batch_size
 TEXT_SEQ_LEN = args.text_seq_len
@@ -112,11 +109,11 @@ assert len(ds) > 0, 'dataset is empty'
 print(f'{len(ds)} image-text pairs found for training')
 
 # Regular DataLoader for image-text-folder datasets
+
 dl = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 
-# load the model in training mode
-
 # Load CLIP
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 clip, _ = load(args.model_name, device=device)
 clip.train()
@@ -144,8 +141,6 @@ def save_model(path):
     save_obj = clip.state_dict()
     torch.save(save_obj, path)
 
-
-# training loop
 
 save_model(f'./{CLIP_OUTPUT_FILE_NAME}')
 
@@ -185,7 +180,6 @@ for epoch in range(0, EPOCHS):
                 'loss': loss.item(),
                 'lr': lr
             }
-
 
         if i % 10 == 9:
             sample_per_sec = BATCH_SIZE * 10 / (time.time() - t)
